@@ -15,6 +15,7 @@ public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
 
+    // 생성
     public ScheduleResponse create(ScheduleRequest request) {
         Schedule schedule = new Schedule(
                 request.getTitle(),
@@ -27,13 +28,23 @@ public class ScheduleService {
         return new ScheduleResponse(saved);
     }
 
-    public List<ScheduleResponse> findAll() {
-        return scheduleRepository.findAll()
-                .stream()
+    // 전체 조회 (작성자 필터 + 수정일 내림차순)
+    public List<ScheduleResponse> findAll(String author) {
+
+        List<Schedule> schedules;
+
+        if (author == null) {
+            schedules = scheduleRepository.findAllByOrderByUpdatedAtDesc();
+        } else {
+            schedules = scheduleRepository.findByAuthorOrderByUpdatedAtDesc(author);
+        }
+
+        return schedules.stream()
                 .map(ScheduleResponse::new)
                 .toList();
     }
 
+    // 단건 조회
     public ScheduleResponse findOne(Long id) {
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("일정 없음"));
@@ -41,6 +52,7 @@ public class ScheduleService {
         return new ScheduleResponse(schedule);
     }
 
+    // 수정
     public ScheduleResponse update(Long id, ScheduleRequest request) {
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("일정 없음"));
@@ -55,6 +67,7 @@ public class ScheduleService {
         return new ScheduleResponse(schedule);
     }
 
+    // 삭제
     public void delete(Long id, String password) {
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("일정 없음"));
